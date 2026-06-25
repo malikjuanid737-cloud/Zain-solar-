@@ -1,0 +1,82 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "User accounts and authentication profiles",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string" },
+        "displayName": { "type": "string" },
+        "phoneNumber": { "type": "string" },
+        "photoURL": { "type": "string" },
+        "isAdmin": { "type": "boolean" }
+      },
+      "required": ["uid"]
+    },
+    "Product": {
+      "title": "Product",
+      "description": "Solar equipment listings and details",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "price": { "type": "number" },
+        "discountPrice": { "type": "number" },
+        "sku": { "type": "string" },
+        "stockStatus": { "type": "string" },
+        "stockQuantity": { "type": "number" },
+        "category": { "type": "string" },
+        "description": { "type": "string" },
+        "rating": { "type": "number" }
+      },
+      "required": ["id", "name", "price", "sku", "category"]
+    },
+    "Order": {
+      "title": "Order",
+      "description": "Customer purchase transaction entries",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "total": { "type": "number" },
+        "paymentMethod": { "type": "string" },
+        "status": { "type": "string" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["id", "userId", "total", "status", "createdAt"]
+    },
+    "Review": {
+      "title": "Review",
+      "description": "Product ratings and comments submitted by users",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userName": { "type": "string" },
+        "rating": { "type": "number" },
+        "comment": { "type": "string" },
+        "date": { "type": "string" },
+        "productId": { "type": "string" }
+      },
+      "required": ["id", "userName", "rating", "comment", "date", "productId"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "UserProfile",
+      "description": "User private data profiles mapped by user ID"
+    },
+    "/products/{productId}": {
+      "schema": "Product",
+      "description": "Available solar items in inventory"
+    },
+    "/orders/{orderId}": {
+      "schema": "Order",
+      "description": "Customer purchase histories"
+    },
+    "/reviews/{reviewId}": {
+      "schema": "Review",
+      "description": "Product reviews and customer feedback"
+    }
+  }
+}

@@ -1,0 +1,82 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Global Safety Net: Default Deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // --- Helper Functions ---
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && (
+        request.auth.token.email == 'malikhassab4@gmail.com' || 
+        (exists(/databases/$(database)/documents/admins/$(request.auth.uid)))
+      );
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // --- Users Collection ---
+    match /users/{userId} {
+      allow get: if isOwner(userId) || isAdmin();
+      allow list: if isAdmin();
+      allow create: if isOwner(userId) && 
+                    incoming().uid == userId && 
+                    incoming().email is string &&
+                    incoming().email.size() <= 128;
+      allow update: if isOwner(userId) && 
+                    incoming().uid == userId && 
+                    // Prevent modifying isAdmin field from client if not admin
+                    (!incoming().diff(existing()).affectedKeys().hasAny(['isAdmin']) || isAdmin());
+      allow delete: if isAdmin();
+    }
+
+    // --- Products Collection ---
+    match /products/{productId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // --- Orders Collection ---
+    match /orders/{orderId} {
+      allow get: if isSignedIn() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow list: if isSignedIn() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow create: if isSignedIn() && incoming().userId == request.auth.uid;
+      allow update: if isAdmin() || (
+        isSignedIn() && 
+        existing().userId == request.auth.uid && 
+        incoming().diff(existing()).affectedKeys().hasOnly(['status']) &&
+        incoming().status == 'Cancelled' &&
+        existing().status == 'Pending'
+      );
+      allow delete: if isAdmin();
+    }
+
+    // --- Reviews Collection ---
+    match /reviews/{reviewId} {
+      allow read: if true;
+      allow create: if isSignedIn() && incoming().userId == request.auth.uid;
+      allow update: if isAdmin();
+      allow delete: if isAdmin() || (isSignedIn() && existing().userId == request.auth.uid);
+    }
+  }
+}

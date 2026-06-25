@@ -1,0 +1,6 @@
+{
+  "name": "Zain Solar",
+  "description": "Zain Solar Pakistan - Premium Solar Solutions & Equipment Store",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
